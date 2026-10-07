@@ -1,0 +1,10 @@
+{
+  "description": "This GEO optimization application enhances user experience for small to medium-sized businesses by providing intuitive design, responsive layouts, and modern interaction patterns.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

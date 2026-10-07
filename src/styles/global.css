@@ -1,0 +1,103 @@
+/* 洞点设计 token —— 唯一权威来源。修改这里即可全局换肤。
+   基线取自 Codex 线框 --s-* 变量。 */
+:root {
+  --s-bg: #fff;
+  --s-canvas: #fafaf8;
+  --s-fg: #15203b;
+  --s-muted: #5c6880;
+  --s-line: #e0e6f0;
+  --s-input: #8390a7;
+  --s-soft: #f3f6fc;
+  --s-mark: #d5def0;
+  --s-brand: #2455df;
+  --s-brand-deep: #1741bb;
+  --s-brand-soft: #edf3ff;
+  --s-on-brand: #fff;
+  --s-orange: #ff955f;
+  --s-orange-ink: #512306;
+  --s-orange-soft: #fff1e6;
+  --s-mint: #107666;
+  --s-mint-soft: #e6f7f1;
+  --s-danger: #a32c3b;
+  --s-danger-soft: #fff0f1;
+  --s-focus: #153ca6;
+  --s-scrim: #1724423b;
+  --s-shadow: 0 10px 32px color-mix(in srgb, var(--s-shadow-tint) 6%, transparent);
+  --s-shadow-raised: 0 16px 40px color-mix(in srgb, var(--s-shadow-tint) 12%, transparent);
+  --s-radius-control: 10px;
+  --s-radius-panel: 18px;
+  --s-motion-fast: 150ms;
+  --s-motion-panel: 220ms;
+  --s-ease: cubic-bezier(.2, .8, .2, 1);
+  --s-font: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --s-text-display: 44px;
+  --s-text-h1: 27px;
+  --s-text-h2: 19px;
+  --s-text-h3: 15px;
+  --s-text-body: 14px;
+  --s-text-caption: 12px;
+  --s-text-eyebrow: 11px;
+
+
+  /* 插画与状态辅助色（首页构成图形、警示色阶） */
+  --s-x-1946c3: #1946c3;
+  --s-x-315cd8: #315cd8;
+  --s-x-3b3325: #3b3325;
+  --s-x-973b30: #973b30;
+  --s-x-983b2e: #983b2e;
+  --s-x-a33a30: #a33a30;
+  --s-x-a7bfff: #a7bfff;
+  --s-x-b9511e: #b9511e;
+  --s-x-c9dcff: #c9dcff;
+  --s-x-dce7ff: #dce7ff;
+  --s-x-e8a496: #e8a496;
+  --s-x-eff4ff: #eff4ff;
+  --s-x-f4ebd8: #f4ebd8;
+  --s-x-f6b8a9: #f6b8a9;
+  --s-x-f6e4d7: #f6e4d7;
+  --s-x-ffb4a4: #ffb4a4;
+  --s-x-ffd0a7: #ffd0a7;
+  --s-x-ffe6ce: #ffe6ce;
+  --s-x-fffaf6: #fffaf6;
+  --s-shadow-tint: #263c64;
+  --s-font-mono: ui-monospace, "PingFang SC", monospace;
+  --s-z-action: 10;
+  --s-z-overlay: 30;
+  --s-z-toast: 40;
+  /* 服务强调色：由 data-service 切换 */
+  --s-accent: var(--s-brand);
+  --s-accent-soft: var(--s-brand-soft);
+  --s-on-accent: var(--s-on-brand);
+}
+[data-service="content"] { --s-accent: var(--s-mint); --s-accent-soft: var(--s-mint-soft); --s-on-accent: var(--s-on-brand); }
+[data-service="publish"] { --s-accent: var(--s-orange); --s-accent-soft: var(--s-orange-soft); --s-on-accent: var(--s-orange-ink); }
+
+/* ── 设计方向：data-direction 切换，仅覆盖 token ── */
+/* 强调色在方向容器内重新解析，使品牌色覆盖生效 */
+[data-direction] { --s-accent: var(--s-brand); --s-accent-soft: var(--s-brand-soft); --s-on-accent: var(--s-on-brand);
+  --s-shadow: 0 10px 32px color-mix(in srgb, var(--s-shadow-tint) 8%, transparent);
+  --s-shadow-raised: 0 16px 40px color-mix(in srgb, var(--s-shadow-tint) 14%, transparent); }
+/* B 纸本清单：暖纸底、墨色线框、直角、无阴影——强调“服务单据”的可信感 */
+[data-direction="paper"] {
+  --s-bg: #fffdf8; --s-canvas: #f3efe6; --s-fg: #1d1a14; --s-muted: #5f584b;
+  --s-line: #d9d1bf; --s-input: #8a8170; --s-soft: #f7f2e7; --s-mark: #e6dcc6;
+  --s-brand: #1f3a8a; --s-brand-deep: #152a66; --s-brand-soft: #e9ecf6;
+  --s-shadow-tint: #3b3325; --s-shadow: none; --s-shadow-raised: 0 1px 0 var(--s-line);
+  --s-radius-control: 3px; --s-radius-panel: 4px;
+  --s-mint: #2f6b4f; --s-mint-soft: #e6efe4; --s-orange: #c8642e; --s-orange-soft: #f7e6d6; --s-orange-ink: #fffdf8;
+}
+/* C 夜间数据台：深底高对比，适合看报告与发布进度 */
+[data-direction="night"] {
+  --s-bg: #151b2b; --s-canvas: #0d1220; --s-fg: #eef2fb; --s-muted: #a6b0c6;
+  --s-line: #2a3450; --s-input: #7c88a6; --s-soft: #1c2438; --s-mark: #2f3b5c;
+  --s-brand: #7fa2ff; --s-brand-deep: #a9c0ff; --s-brand-soft: #1f2c52; --s-on-brand: #0d1220;
+  --s-mint: #4fd1b5; --s-mint-soft: #16322f; --s-orange-soft: #3a2518; --s-orange-ink: #1d0f05;
+  --s-danger: #ff8a95; --s-danger-soft: #3a1c22; --s-focus: #a9c0ff;
+  --s-shadow-tint: #000; --s-radius-control: 8px; --s-radius-panel: 14px;
+}
+/* D 柔和圆润：大圆角、低对比浅蓝底，降低小商户的“后台感” */
+[data-direction="soft"] {
+  --s-canvas: #eef3fb; --s-line: #e6ebf4; --s-soft: #f4f7fd;
+  --s-radius-control: 999px; --s-radius-panel: 28px;
+  --s-shadow: 0 18px 48px color-mix(in srgb, var(--s-brand) 10%, transparent);
+}

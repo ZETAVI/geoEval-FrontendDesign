@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+@import './styles/global.css';
+@import './styles/components.css' layer(components);
+
+/* 把 global.css 变量映射为 Tailwind 工具类，组件只用这些类 */
+@theme inline {
+  --color-canvas: var(--s-canvas);
+  --color-surface: var(--s-bg);
+  --color-sunken: var(--s-soft);
+  --color-mark: var(--s-mark);
+  --color-line: var(--s-line);
+  --color-ink: var(--s-fg);
+  --color-ink-2: var(--s-muted);
+  --color-ink-3: var(--s-input);
+  --color-accent: var(--s-accent);
+  --color-accent-soft: var(--s-accent-soft);
+  --color-on-accent: var(--s-on-accent);
+  --color-brand: var(--s-brand);
+  --color-brand-deep: var(--s-brand-deep);
+  --color-brand-soft: var(--s-brand-soft);
+  --color-on-brand: var(--s-on-brand);
+  --color-mint: var(--s-mint);
+  --color-mint-soft: var(--s-mint-soft);
+  --color-orange: var(--s-orange);
+  --color-orange-soft: var(--s-orange-soft);
+  --color-orange-ink: var(--s-orange-ink);
+  --color-danger: var(--s-danger);
+  --color-danger-soft: var(--s-danger-soft);
+  --color-scrim: var(--s-scrim);
+  --radius-control: var(--s-radius-control);
+  --radius-panel: var(--s-radius-panel);
+  --font-sans: var(--s-font);
+  --text-display: var(--s-text-display);
+  --text-h1: var(--s-text-h1);
+  --text-h2: var(--s-text-h2);
+  --text-h3: var(--s-text-h3);
+  --text-body: var(--s-text-body);
+  --text-caption: var(--s-text-caption);
+  --text-eyebrow: var(--s-text-eyebrow);
+  --shadow-soft: var(--s-shadow);
+  --font-mono: var(--s-font-mono);
+  --shadow-raised: var(--s-shadow-raised);
+}
+
+body { font-family: var(--s-font); font-size: var(--s-text-body); line-height: 1.6; color: var(--s-fg); background: var(--s-canvas); }
