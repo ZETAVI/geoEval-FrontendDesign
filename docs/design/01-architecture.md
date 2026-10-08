@@ -8,9 +8,9 @@
 | Motion（`motion/react`） | ✅ 已用 |
 | Lucide 图标 | ✅ 已用 |
 | 设计稿代码位置 | ✅ `src/design/`（单层目录，未拆 features/ui/patterns） |
-| Astra UI kit（hardcoded-astra-ui） | ❌ 无 npm 元数据，无法安装；改用 global.css token |
+| Astra UI kit | ❌ 不使用（无 npm 包）；以 global.css token 为准，`guidelines/Guidelines.md` 已改写 |
 | Radix / shadcn、TanStack Query、sonner、react-hook-form + zod、react-router | ⏳ 生产/后续表单与路由阶段再引入；引入需登记 |
-当前页面切换是 `Design.tsx` 里的 `useState<Page>`；真实路由到生产阶段再做。
+当前页面切换由 `flow.tsx` 的 `go(page, params)` 驱动（`FlowProvider` 持有页面、品牌、余额、订单、通知、工单、文章，`BrandState` 由它们派生）；真实路由到生产阶段再做，路由表（页面→路径→入参）尚未登记。共享控件在 `kit.tsx`（`Chip`、`TextField`），数据单一来源在 `data.ts / diag.ts / media.ts / profile.ts`。
 
 ## 技术选型
 | 层 | 选型 | 说明 |
@@ -18,7 +18,7 @@
 | 框架 | React 19（生产环境用 Next.js App Router，设计工作台用 Vite） | 两边共用同一套组件源码 |
 | 样式 | Tailwind CSS v4，token 写在 `@theme` 中 | 禁止内联 `style`（动态几何值除外，见下文）和裸 hex |
 | 无头原语 | Radix Primitives（shadcn 模式：源码拷贝进仓库） | 可访问性与键盘行为交给原语负责 |
-| 设计系统 | Astra UI kit（`@figma/astraui`），外加项目 `ui/` 层 | Astra 有的组件优先用 Astra，缺口用 Radix 自建 |
+| 设计系统 | 项目 token（`global.css`）+ 项目 `ui/` 层 | 缺口用 Radix 自建 |
 | 动效 | Motion（`motion/react`） | 统一的时长和曲线，见 05-motion |
 | 图标 | Lucide，stroke 1.75，尺寸 16/20 | 不混用其他图标库 |
 | 服务端状态 | TanStack Query | 负责缓存、骨架屏、乐观更新与回滚 |
@@ -36,7 +36,7 @@ features/<domain>/     业务模块：brand、diagnosis、report、content、pub
   api.ts               Query hooks（唯一的数据入口）
   state.ts             品牌状态机和选择器
 patterns/              跨业务模式：PageHeader、EmptyState、GateNotice、StatusBadge、StepSheet、DataList、ProgressGrid
-ui/                    原语：Button、Card、Sheet、Dialog、Tabs、Menu、Skeleton、Field…（对 Astra 或 Radix 做薄封装）
+ui/                    原语：Button、Card、Sheet、Dialog、Tabs、Menu、Skeleton、Field…（对 Radix 做薄封装）
 tokens/                就是 index.css 中的 @theme，不另建 JS token
 ```
 规则：

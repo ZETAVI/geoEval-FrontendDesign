@@ -6,13 +6,6 @@
       "headers": {
         "Authorization": "Bearer ${MCP_PROXY_AUTH_TOKEN}"
       }
-    },
-    "my github__2634c20e": {
-      "type": "sse",
-      "url": "${MCP_PROXY_BASE_URL}/proxy/2634c20e-c5e8-4868-a50e-190a7ffa81f1",
-      "headers": {
-        "Authorization": "Bearer ${MCP_PROXY_AUTH_TOKEN}"
-      }
     }
   }
 }

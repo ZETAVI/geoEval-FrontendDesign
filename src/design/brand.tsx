@@ -105,7 +105,7 @@ export function LogoField({ className }: { className?: string }) {
           <circle cx="120" cy="120" r="122" fill="none" stroke="none" />
           {!reduce && [0, 1, 2].map((i) => (
             <motion.circle key={i} cx="206" cy="40" r="17" fill="none" className="stroke-orange" strokeWidth="1.5"
-              animate={{ r: [17, 56], opacity: [0.55, 0] }} transition={{ duration: 3, repeat: Infinity, delay: i, ease: 'easeOut' }} />
+              initial={{ r: 17, opacity: 0.55 }} animate={{ r: [17, 56], opacity: [0.55, 0] }} transition={{ duration: 3, repeat: Infinity, delay: i, ease: 'easeOut' }} />
           ))}
           <motion.circle cx="206" cy="40" r="17" fill={`url(#${id}-dot)`}
             animate={reduce ? undefined : { scale: [1, 1.1, 1] }} transition={loop(3)} />

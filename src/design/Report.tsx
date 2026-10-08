@@ -3,9 +3,10 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, FileSearch, Lock, Link2 } from 'lucide-react'
 import { Impression } from './Impression'
 import { PositionMap, type Sel } from './PositionMap'
-import { KIND_LABEL, METRICS as M, PLATFORM_NAMES, QUESTIONS, SAMPLES, TIER, questionHits, tierOf } from './diag'
+import { KIND_LABEL, METRICS as M, PLATFORM_NAMES, PLATFORM_SHORT, QUESTIONS, SAMPLES, TIER, questionHits, tierOf } from './diag'
 import { CountUp, EASE, rise, SPRING, stagger } from './motion'
 import { Stars, cx, type Page } from './shared'
+import type { Params } from './flow'
 
 type TabKey = 'overview' | 'platform' | 'impression'
 const TABS: [TabKey, string][] = [['overview', '结果总览'], ['platform', '平台排位'], ['impression', '品牌印象']]
@@ -41,7 +42,7 @@ function Dots() {
       {SAMPLES.map((row, i) => (
         <motion.li key={i} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.6 + i * 0.08, ...SPRING }}
           className={cx('grid size-6 place-items-center rounded-full text-eyebrow font-bold', row.some((x) => x.rank) ? 'bg-brand text-on-brand' : 'border border-dashed border-mark text-ink-3')}>
-          {PLATFORM_NAMES[i][0]}
+          {PLATFORM_SHORT[i][0]}
         </motion.li>
       ))}
     </ul>
@@ -82,9 +83,9 @@ function Hero() {
           <button onClick={() => setHow((h) => !h)} aria-expanded={how} aria-label="指数怎么算" className="text-ink-3 hover:text-ink"><CircleHelp className="size-3.5" /></button>
         </p>
         <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
-          <CountUp to={3.5} decimals={1} className="text-[clamp(3.5rem,6vw,4.5rem)] font-black leading-none text-brand tabular-nums" />
+          <CountUp to={M.index} decimals={1} className="text-[clamp(3.5rem,6vw,4.5rem)] font-black leading-none text-brand tabular-nums" />
           <span className="text-h2 text-ink-2">/ 5</span>
-          <Stars value={3.5} className="ml-2" />
+          <Stars value={M.index} className="ml-2" />
         </div>
         <AnimatePresence>
           {how && (
@@ -131,7 +132,7 @@ function QuestionRows({ open }: { open: (q: number) => void }) {
       </div>
       <div className="mt-4 hidden grid-cols-[1fr_auto_7rem] items-end gap-4 px-3 text-eyebrow text-ink-3 md:grid">
         <span />
-        <span className="flex gap-2">{PLATFORM_NAMES.map((n) => <span key={n} className="w-11 text-center">{n.length > 3 ? n.slice(0, 2) : n}</span>)}</span>
+        <span className="flex gap-2">{PLATFORM_SHORT.map((n) => <span key={n} className="w-11 whitespace-nowrap text-center">{n}</span>)}</span>
         <span />
       </div>
       <ul className="mt-1 md:mt-0">
@@ -176,11 +177,11 @@ const GLANCE = [
 const CHIP = { pos: 'bg-mint-soft text-mint', neg: 'bg-danger-soft text-danger', peer: 'bg-sunken text-ink-2', me: 'bg-brand text-on-brand' }
 
 const DIRECTIONS = [
-  { n: 1, title: '补全服务范围', desc: '3 条回答没说清你服务哪些区域', proof: 'Q3 · 豆包、DeepSeek、Kimi', how: '在核心文章补充区域、项目和价格', cta: '完善文章', to: 'home' as const },
-  { n: 2, title: '增加媒体报道', desc: 'AI 更常推荐有公开报道的品牌', proof: 'Q1、Q2 · 阿姨帮、管家帮', how: '通过媒体发布补充客观报道', cta: '选择发布方式', to: 'home' as const },
+  { n: 1, title: '补全服务范围', desc: '3 条回答没说清你服务哪些区域', proof: 'Q3 · 豆包、腾讯元宝、DeepSeek', how: '在文章里补充区域、项目和价格', cta: '完善文章', to: 'content' as const, src: { q: 'Q3', platform: '腾讯元宝', gap: '服务范围' } },
+  { n: 2, title: '增加媒体报道', desc: 'AI 更常推荐有公开报道的品牌', proof: 'Q1、Q2 · 阿姨帮、管家帮', how: '通过媒体发布补充客观报道', cta: '选择发布方式', to: 'publish' as const },
 ]
 
-function Directions({ go }: { go: (p: Page) => void }) {
+function Directions({ go }: { go: (p: Page, params?: Params) => void }) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {DIRECTIONS.map((d) => (
@@ -196,7 +197,7 @@ function Directions({ go }: { go: (p: Page) => void }) {
             <div className="flex gap-3"><dt className="w-10 shrink-0 text-ink-3">依据</dt><dd className="flex items-center gap-1 font-medium"><Link2 className="size-3 text-ink-3" />{d.proof}</dd></div>
             <div className="flex gap-3"><dt className="w-10 shrink-0 text-ink-3">做法</dt><dd className="font-medium">{d.how}</dd></div>
           </dl>
-          <button onClick={() => go(d.to)} className="mt-auto inline-flex w-fit items-center gap-1.5 text-body font-semibold text-brand">
+          <button onClick={() => go(d.to, 'src' in d ? { source: d.src } : undefined)} className="mt-auto inline-flex w-fit items-center gap-1.5 text-body font-semibold text-brand">
             {d.cta}<ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </button>
         </motion.article>
@@ -205,7 +206,7 @@ function Directions({ go }: { go: (p: Page) => void }) {
   )
 }
 
-export function Report({ go }: { go: (p: Page) => void }) {
+export function Report({ go }: { go: (p: Page, params?: Params) => void }) {
   const [tab, setTab] = useState<TabKey>('overview')
   const [sel, setSel] = useState<Sel>([0, 0])
   const [focusQ, setFocusQ] = useState<number | null>(null)

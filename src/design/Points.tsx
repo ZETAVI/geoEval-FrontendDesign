@@ -4,6 +4,7 @@ import { Check, Clock, Loader2, Minus, Receipt } from 'lucide-react'
 import { LogoField } from './brand'
 import { CountUp, EASE, rise, SPRING, stagger } from './motion'
 import { AnimatedNumber, cx } from './shared'
+import { PayMethod, payingText, type Via } from './ui'
 
 type Rec = { id: string; pts: number; yuan: number; time: string; via: string; status: 'pending' | 'ok' | 'closed' }
 const INITIAL: Rec[] = [
@@ -13,10 +14,10 @@ const INITIAL: Rec[] = [
   { id: 'r1', pts: 1000, yuan: 100, time: '9月18日 09:30', via: '支付宝', status: 'ok' },
 ]
 const LEDGER = [
-  { what: '媒体发布 · 品牌介绍 多点分布', delta: -900, time: '9月24日 11:02' },
+  { what: '媒体发布 · PO-0924 多点分布', delta: -900, time: '9月24日 11:02' },
+  { what: '发布结算退回 · PO-0920 1 篇未上线', delta: 50, time: '9月25日 09:00' },
   { what: '充值到账', delta: 3000, time: '9月23日 15:21' },
-  { what: '发布结算返还 · 1 篇未上线', delta: 90, time: '9月22日 09:00' },
-  { what: '媒体发布 · 服务介绍 基础覆盖', delta: -500, time: '9月15日 16:40' },
+  { what: '媒体发布 · PO-0920 基础覆盖', delta: -500, time: '9月20日 16:40' },
 ]
 const STATUS = {
   pending: { label: '待支付', icon: Clock, cls: 'text-orange' },
@@ -116,17 +117,17 @@ type Phase = 'idle' | 'paying' | 'done'
 function Recharge({ onPaid }: { onPaid: (yuan: number, via: string) => void }) {
   const [tier, setTier] = useState<number | null>(100)
   const [custom, setCustom] = useState('')
-  const [pay, setPay] = useState<'alipay' | 'wechat'>('alipay')
   const [phase, setPhase] = useState<Phase>('idle')
+  const [via, setVia] = useState<Via>('支付宝')
   const yuan = tier ?? (Number(custom) || 0)
   const invalid = tier === null && custom !== '' && (yuan < 1 || yuan > 100000)
   const submit = () => {
     setPhase('paying')
-    setTimeout(() => { setPhase('done'); onPaid(yuan, pay === 'alipay' ? '支付宝' : '微信支付') }, 1400)
+    setTimeout(() => { setPhase('done'); onPaid(yuan, via) }, 1400)
     setTimeout(() => setPhase('idle'), 3600)
   }
   return (
-    <section aria-labelledby="rc" className="relative grid gap-5 overflow-hidden rounded-panel border border-line/80 bg-linear-to-b from-brand-soft/70 via-surface to-surface p-6 shadow-soft lg:sticky lg:top-6">
+    <section aria-labelledby="rc" className="relative grid gap-5 overflow-hidden rounded-panel border border-line/80 bg-linear-to-b from-brand-soft via-surface to-surface bg-surface p-6 shadow-soft lg:sticky lg:top-6">
       <div>
         <h2 id="rc" className="text-h2 font-bold">充值积分</h2>
         <p className="mt-1 text-caption text-ink-2">选好金额，1 元得 10 积分</p>
@@ -154,18 +155,7 @@ function Recharge({ onPaid }: { onPaid: (yuan: number, via: string) => void }) {
           className={cx('h-11 rounded-control border bg-surface px-3 text-body text-ink outline-none transition-shadow focus:ring-4 focus:ring-brand/15', invalid ? 'border-danger' : 'border-line focus:border-brand')} />
         <span className={cx(invalid && 'text-danger')}>{invalid ? '金额需为 1–100000 的整数' : '1–100000 元，整数'}</span>
       </label>
-      <div className="grid gap-1.5">
-        <span className="text-caption text-ink-2">支付方式</span>
-        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="支付方式">
-          {([['alipay', '支付宝', '支', 'bg-brand'], ['wechat', '微信支付', '微', 'bg-mint']] as const).map(([v, l, m, bg]) => (
-            <button key={v} role="radio" aria-checked={pay === v} onClick={() => setPay(v)}
-              className={cx('flex h-12 items-center gap-2.5 rounded-control border bg-surface px-3 text-body transition-colors', pay === v ? 'border-brand ring-4 ring-brand/10' : 'border-line hover:border-ink-3')}>
-              <span className={cx('grid size-3.5 place-items-center rounded-full border-2', pay === v ? 'border-brand' : 'border-ink-3')}>{pay === v && <span className="size-1.5 rounded-full bg-brand" />}</span>
-              <span className={cx('grid size-6 place-items-center rounded-md text-eyebrow font-bold text-on-brand', bg)}>{m}</span>{l}
-            </button>
-          ))}
-        </div>
-      </div>
+      <PayMethod value={via} onChange={setVia} />
       <dl className="grid gap-2 rounded-control bg-sunken p-4 text-body">
         <div className="flex items-baseline justify-between text-ink-2"><dt>获得积分</dt><dd><AnimatedNumber value={yuan * 10} className="text-h3 font-bold text-ink tabular-nums" /></dd></div>
         <div className="flex items-baseline justify-between text-ink-2"><dt>实际支付</dt><dd><AnimatedNumber value={yuan} prefix="¥" className="text-h3 font-bold text-ink tabular-nums" /></dd></div>
@@ -175,7 +165,7 @@ function Recharge({ onPaid }: { onPaid: (yuan: number, via: string) => void }) {
         <AnimatePresence mode="wait" initial={false}>
           <motion.span key={phase} initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -16, opacity: 0 }} transition={{ duration: 0.2 }} className="flex items-center justify-center gap-2">
             {phase === 'idle' && <>确认充值</>}
-            {phase === 'paying' && <><Loader2 className="size-4 animate-spin" /> 等待支付结果…</>}
+            {phase === 'paying' && <><Loader2 className="size-4 animate-spin" /> {payingText(via)}</>}
             {phase === 'done' && <><Check className="size-4" strokeWidth={3} /> 已到账 {(yuan * 10).toLocaleString()} 积分</>}
           </motion.span>
         </AnimatePresence>

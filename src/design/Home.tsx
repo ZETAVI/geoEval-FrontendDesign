@@ -1,17 +1,21 @@
 import { useState, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, Check, ChevronDown, ExternalLink, FileText, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Sparkles } from 'lucide-react'
 import { PlaneArt, SheetsArt } from './art'
 import { LogoField, SearchArt } from './brand'
 import { CountUp, EASE, Parallax, rise, SPRING, stagger, useTilt } from './motion'
 import { PLATFORM_NAMES, TIER, bestRank, tierOf } from './diag'
-import { ARTICLE, ORDERS, Progress, Stars, cx } from './shared'
+import { Stars, cx } from './shared'
+import { OrderRow } from './Orders'
+import { MEDIA } from './media'
+import { useFlow, type Article, type BrandState } from './flow'
+import { METRICS } from './diag'
 
 type Tone = 'brand' | 'orange' | 'mint'
-const TONE: Record<Tone, { field: string; btn: string; ring: string; chip: string }> = {
-  brand: { field: 'from-brand-soft via-surface to-surface', btn: 'bg-brand text-on-brand shadow-brand/30', ring: 'focus-visible:outline-brand', chip: 'bg-brand-soft text-brand' },
-  orange: { field: 'from-orange-soft via-surface to-surface', btn: 'bg-orange text-orange-ink shadow-orange/30', ring: 'focus-visible:outline-orange', chip: 'bg-orange-soft text-orange-ink' },
-  mint: { field: 'from-mint-soft via-surface to-surface', btn: 'bg-mint text-on-brand shadow-mint/30', ring: 'focus-visible:outline-mint', chip: 'bg-mint-soft text-mint' },
+const TONE: Record<Tone, { field: string; btn: string; ring: string; chip: string; num: string }> = {
+  brand: { field: 'from-brand-soft via-surface to-surface', btn: 'bg-brand text-on-brand shadow-brand/30', ring: 'focus-visible:outline-brand', chip: 'bg-brand-soft text-brand', num: 'text-brand' },
+  orange: { field: 'from-orange-soft via-surface to-surface', btn: 'bg-orange text-orange-ink shadow-orange/30', ring: 'focus-visible:outline-orange', chip: 'bg-orange-soft text-orange-ink', num: 'text-orange-deep' },
+  mint: { field: 'from-mint-soft via-surface to-surface', btn: 'bg-mint text-on-brand shadow-mint/30', ring: 'focus-visible:outline-mint', chip: 'bg-mint-soft text-mint', num: 'text-mint' },
 }
 
 /** 服务卡：色场 + 讲内容的图形 + 主指标；悬停/聚焦展开“这项服务此刻的具体情况” */
@@ -40,14 +44,14 @@ function ServiceCard({ tone, title, desc, art: Art, label, metric, cta, peek, ba
           <span className={cx('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-eyebrow font-semibold', s.chip)}>
             <Sparkles className="size-3" /> {badge}
           </span>
-        ) : <span className="text-caption text-ink-3">{step}</span>}
+        ) : <span className={cx("text-caption font-semibold", s.num)}>{step}</span>}
       </div>
       <h2 className="max-w-[60%] text-h1 font-black tracking-tight">{title}</h2>
       <p className="mt-2 max-w-[58%] text-caption leading-relaxed text-ink-2">{desc}</p>
 
       <div className="mt-auto pt-8">
         <p className="text-caption text-ink-2">{label}</p>
-        <div className="mt-1 flex items-baseline gap-1.5">{metric}</div>
+        <div className={cx("mt-1 flex items-baseline gap-1.5", s.num)}>{metric}</div>
         <motion.div
           initial={false}
           animate={{ height: on ? 'auto' : 0, opacity: on ? 1 : 0 }}
@@ -87,15 +91,16 @@ function PlatformPeek() {
 }
 
 /** 内容卡：文章状态机 草稿 → 确认 → 可发布 */
-function ArticlePeek() {
-  const steps = ['生成草稿', '确认内容', '可用于发布']
+function ArticlePeek({ article }: { article: Article | null }) {
+  const steps = ['写草稿', '确认', '可发布']
+  const done = !article ? 0 : article.status === 'draft' ? 1 : 3
   return (
     <div className="grid gap-2.5">
-      <p className="truncate text-body font-semibold">《{ARTICLE.title}》</p>
+      <p className="truncate text-body font-semibold">{article ? `《${article.title}》` : '还没有文章，按诊断报告的建议来写'}</p>
       <ol className="flex items-center gap-1.5 text-eyebrow text-ink-2">
         {steps.map((s, i) => (
           <li key={s} className="flex items-center gap-1.5">
-            <span className="grid size-4 place-items-center rounded-full bg-orange text-orange-ink"><Check className="size-2.5" strokeWidth={3} /></span>
+            <span className={cx('grid size-4 place-items-center rounded-full', i < done ? 'bg-orange text-orange-ink' : 'border border-dashed border-mark')}>{i < done && <Check className="size-2.5" strokeWidth={3} />}</span>
             {s}
             {i < steps.length - 1 && <span className="h-px w-3 bg-orange/40" />}
           </li>
@@ -108,7 +113,7 @@ function ArticlePeek() {
 /** 发布卡：两种发布方式的差异一句话讲清 */
 function PublishPeek() {
   const [m, setM] = useState<'pack' | 'precise'>('pack')
-  const copy = { pack: '按篇数购买，我们来选媒体', precise: '自己挑媒体，按媒体计价' }
+  const copy = { pack: '买一档篇数，由我们安排媒体', precise: '自己挑每一家媒体，逐家计价' }
   return (
     <div className="grid gap-2">
       <div className="relative inline-grid w-fit grid-cols-2 rounded-full bg-surface/80 p-0.5 text-caption ring-1 ring-line">
@@ -128,52 +133,15 @@ function PublishPeek() {
   )
 }
 
-/** 发布记录：一行一笔订单，展开即看到已上线的链接 */
-function OrderRow({ o, open, toggle }: { o: (typeof ORDERS)[number]; open: boolean; toggle: () => void }) {
-  return (
-    <li className="border-b border-line last:border-0">
-      <button onClick={toggle} aria-expanded={open}
-        className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 rounded-control px-2 py-4 text-left transition-colors hover:bg-sunken/60 md:grid-cols-[auto_1.2fr_0.7fr_1.6fr_0.6fr_auto]">
-        <span className={cx('grid size-9 place-items-center rounded-control', o.tone === 'brand' ? 'bg-brand-soft text-brand' : 'bg-mint-soft text-mint')}><FileText className="size-4" /></span>
-        <span><b className="font-semibold">{o.name}</b><small className="block text-caption text-ink-3">{o.plan}</small></span>
-        <span className={cx('hidden items-center gap-1.5 text-caption md:flex', o.tone === 'brand' ? 'text-brand' : 'text-mint')}>
-          {o.tone === 'brand' ? (
-            <span className="relative flex size-2"><span className="absolute inset-0 animate-ping rounded-full bg-brand/50" /><span className="relative size-2 rounded-full bg-brand" /></span>
-          ) : <Check className="size-3.5" strokeWidth={3} />}
-          {o.status}
-        </span>
-        <span className="hidden items-center gap-3 md:flex"><Progress {...o} /><span className="shrink-0 text-caption text-ink-2 tabular-nums">{o.done} / {o.total} 篇</span></span>
-        <span className="hidden text-caption text-ink-3 md:block">{o.date}</span>
-        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={SPRING} className="text-ink-3"><ChevronDown className="size-4" /></motion.span>
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: EASE }} className="overflow-hidden">
-            <ol className="relative mb-4 ml-6 grid gap-3 border-l border-dashed border-line pl-6 md:ml-[3.25rem]">
-              {o.results.map((r, i) => (
-                <motion.li key={r.media} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 * i }} className="relative flex flex-wrap items-center gap-x-4 gap-y-1 text-body">
-                  <span className={cx('absolute -left-[1.85rem] size-2.5 rounded-full ring-4 ring-surface', o.tone === 'brand' ? 'bg-brand' : 'bg-mint')} />
-                  <span className="font-medium">{r.media}</span>
-                  <span className="text-caption text-ink-3">{r.time} 上线</span>
-                  <a href="#" onClick={(e) => e.preventDefault()} className="ml-auto flex items-center gap-1 text-caption text-brand hover:underline">查看原文 <ExternalLink className="size-3" /></a>
-                </motion.li>
-              ))}
-              {o.done < o.total && (
-                <li className="relative text-caption text-ink-3">
-                  <span className="absolute -left-[1.85rem] top-1 size-2.5 rounded-full border-2 border-mark bg-surface" />
-                  还有 {o.total - o.done} 篇处理中，上线后会通知你
-                </li>
-              )}
-            </ol>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </li>
-  )
-}
+const NEXT: Record<BrandState, 'diag' | 'content' | 'publish' | null> = { setup: 'diag', ready: 'diag', report: 'content', draft: 'content', publishable: 'publish', published: null }
 
-export function Home({ go }: { go: (p: 'report') => void }) {
-  const [open, setOpen] = useState<string | null>(null)
+export function Home() {
+  const { go, state, article, orders } = useFlow()
+  const next = NEXT[state]
+  const diagnosed = state !== 'ready' && state !== 'setup'
+  const setup = state === 'setup'
+  const contentCta = state === 'report' ? '写第一篇文章' : state === 'draft' ? '确认文章' : state === 'ready' ? '写文章' : '查看文章'
+  const publishCta = state === 'publishable' ? '去发布这篇' : state === 'published' ? '再发布一批' : '看看发布方式'
   return (
     <div className="relative overflow-hidden">
       <LogoField className="inset-x-0 top-0 h-[460px]" />
@@ -181,35 +149,47 @@ export function Home({ go }: { go: (p: 'report') => void }) {
         <motion.header variants={rise} className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <h1 className="text-[clamp(2.4rem,5.2vw,3.75rem)] font-black leading-[1.05] tracking-tight">品牌服务</h1>
-            <p className="mt-3 text-body text-ink-2">让更多人在 AI 搜索里找到你</p>
+            <p className="mt-3 text-body text-ink-2">先看 AI 怎么说你，再写文章，最后发到媒体上</p>
           </div>
         </motion.header>
 
         <motion.div variants={stagger} className="grid gap-4 lg:grid-cols-3">
-          <ServiceCard tone="brand" title="AI 搜索诊断" step="第 1 步" desc="看 AI 怎么介绍你的品牌" art={SearchArt} onCta={() => go('report')}
+          <ServiceCard tone="brand" title="AI 搜索诊断" step="第 1 步" desc="看 5 个 AI 平台把你排第几" art={SearchArt}
+            badge={next === 'diag' ? '建议下一步' : undefined} onCta={() => (setup ? go('content', { tab: 'profile' }) : go(diagnosed ? 'report' : 'running'))}
             label="AI 推荐指数"
-            metric={<><CountUp to={3.5} decimals={1} className="text-display font-black leading-none text-brand tabular-nums" /><span className="text-h3 text-ink-2">/ 5</span><Stars value={3.5} className="ml-2" /></>}
-            peek={<PlatformPeek />} cta="查看报告" />
-          <ServiceCard tone="orange" title="品牌内容" step="第 2 步" desc="写好并确认品牌核心文章" art={SheetsArt}
-            label="核心文章"
-            metric={<><CountUp to={1} className="text-display font-black leading-none tabular-nums" /><span className="text-h3 text-ink-2">篇 · 已确认</span></>}
-            peek={<ArticlePeek />} cta="查看文章" />
-          <ServiceCard tone="mint" title="媒体发布" step="第 3 步" desc="把文章发布到 50+ 家媒体" art={PlaneArt}
-            label="可选媒体资源" badge="建议下一步"
-            metric={<><CountUp to={50} className="text-display font-black leading-none tabular-nums" /><span className="text-display font-black leading-none">+</span><span className="text-h3 text-ink-2">家</span></>}
-            peek={<PublishPeek />} cta="选择发布方式" />
+            metric={diagnosed
+              ? <><CountUp to={METRICS.index} decimals={1} className="text-display font-black leading-none tabular-nums" /><span className="text-h3 text-ink-2">/ 5</span><Stars value={METRICS.index} className="ml-2" /></>
+              : <span className="text-h1 font-black leading-none text-ink-3">尚未诊断</span>}
+            peek={diagnosed ? <PlatformPeek /> : <p className="text-caption text-ink-2">{setup ? '品牌资料还没填完，补全后才能诊断。' : '约 3 分钟，每个平台问 4 个问题。'}</p>} cta={diagnosed ? '查看报告' : setup ? '先补全资料' : '开始诊断'} />
+          <ServiceCard tone="orange" title="品牌内容" step="第 2 步" desc="写一篇 AI 愿意引用的文章" art={SheetsArt}
+            badge={next === 'content' ? '建议下一步' : undefined} onCta={() => go('content', { tab: 'article' })}
+            label="当前文章"
+            metric={<><CountUp to={article ? 1 : 0} className="text-display font-black leading-none tabular-nums" /><span className="text-h3 text-ink-2">篇 · {!article ? '还没开始写' : article.status === 'draft' ? '草稿，待确认' : '已确认，可发布'}</span></>}
+            peek={<ArticlePeek article={article} />} cta={contentCta} />
+          <ServiceCard tone="mint" title="媒体发布" step="第 3 步" desc="把文章发到媒体，让 AI 找到你" art={PlaneArt}
+            label="可选媒体" badge={next === 'publish' ? '建议下一步' : undefined} onCta={() => go('publish', { tab: 'plans' })}
+            metric={<><CountUp to={MEDIA.length} className="text-display font-black leading-none tabular-nums" /><span className="text-h3 text-ink-2">家</span></>}
+            peek={<PublishPeek />} cta={publishCta} />
         </motion.div>
 
         <motion.section variants={rise} className="rounded-panel border border-line/80 bg-surface p-6 shadow-soft">
           <div className="flex items-center justify-between">
             <h2 className="text-h2 font-bold">发布记录</h2>
-            <button className="group flex items-center gap-1 text-caption text-ink-2 hover:text-ink">
-              查看全部 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-            </button>
+            {orders.length > 0 && <button onClick={() => go('publish', { tab: 'orders' })} className="flex items-center gap-1 text-caption font-semibold text-mint">查看全部 {orders.length} 笔<ArrowRight className="size-3.5" /></button>}
           </div>
-          <ul className="mt-2">
-            {ORDERS.map((o) => <OrderRow key={o.id} o={o} open={open === o.id} toggle={() => setOpen(open === o.id ? null : o.id)} />)}
-          </ul>
+          {orders.length ? (
+            <>
+              <ul className="mt-2">
+                {orders.slice(0, 2).map((o) => <OrderRow key={o.id} o={o} />)}
+              </ul>
+              <div className="mt-2 flex flex-wrap items-center gap-3 rounded-control bg-brand-soft px-4 py-3 text-body">
+                <span className="text-ink-2">文章上线后，AI 的回答会逐步变化，可以再测一次看效果。</span>
+                <button onClick={() => go('running')} className="ml-auto flex items-center gap-1.5 font-semibold text-brand">再测一次 <ArrowRight className="size-4" /></button>
+              </div>
+            </>
+          ) : (
+            <p className="py-10 text-center text-caption text-ink-3">还没有发布记录。文章发出后，每家媒体的上线进度会在这里。</p>
+          )}
         </motion.section>
       </motion.div>
     </div>

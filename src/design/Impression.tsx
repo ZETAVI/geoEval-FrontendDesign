@@ -9,8 +9,8 @@ type Theme = { t: string; n: number; tone: 'pos' | 'neg'; quotes: { who: string;
 /** 按“云”的视觉顺序排列：大小交错，正负交错 */
 const THEMES: Theme[] = [
   { t: '上门流程规范', n: 4, tone: 'pos', quotes: [{ who: '豆包 · Q1', text: '上门流程规范，服务前会确认清单，适合浦东家庭。' }, { who: '豆包 · Q3', text: '本地家政公司，流程规范。' }] },
-  { t: '服务范围不清楚', n: 3, tone: 'neg', quotes: [{ who: '豆包 · Q3', text: '服务范围没有写清。' }, { who: 'Kimi · Q3', text: '但服务区域不明确。' }] },
-  { t: '阿姨培训到位', n: 3, tone: 'pos', quotes: [{ who: 'Kimi · Q3', text: '阿姨培训到位。' }, { who: '豆包 · Q2', text: '深度保洁有固定清单，阿姨上岗前有培训。' }] },
+  { t: '服务范围不清楚', n: 3, tone: 'neg', quotes: [{ who: '豆包 · Q3', text: '服务范围没有写清。' }, { who: '腾讯元宝 · Q3', text: '但服务区域不明确。' }] },
+  { t: '阿姨培训到位', n: 3, tone: 'pos', quotes: [{ who: '腾讯元宝 · Q3', text: '阿姨培训到位。' }, { who: '豆包 · Q2', text: '深度保洁有固定清单，阿姨上岗前有培训。' }] },
   { t: '线上评价较少', n: 2, tone: 'neg', quotes: [{ who: 'DeepSeek · Q3', text: '线上评价较少。' }, { who: 'DeepSeek · Q1', text: '公开信息较少。' }] },
   { t: '价格透明', n: 2, tone: 'pos', quotes: [{ who: '豆包 · Q2', text: '深度保洁有固定清单，报价按面积计。' }] },
 ]
@@ -113,9 +113,9 @@ function Peers() {
         {PEERS.map((p, i) => (
           <motion.g key={p.name} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} whileHover={{ scale: 1.05 }}
             transition={{ delay: 0.1 + i * 0.1, type: 'spring', stiffness: 220, damping: 18 }} className="origin-center [transform-box:fill-box]">
-            <circle cx={p.x} cy={p.y} r={R(p.n)} className={p.me ? 'fill-brand' : 'fill-sunken stroke-line'} strokeWidth={1.5} />
-            <text x={p.x} y={p.y - 2} textAnchor="middle" className={cx('font-sans text-h3 font-bold', p.me ? 'fill-on-brand' : 'fill-ink')}>{p.name}</text>
-            <text x={p.x} y={p.y + 16} textAnchor="middle" className={cx('font-sans text-caption tabular-nums', p.me ? 'fill-on-brand' : 'fill-ink-2')}>{p.n} 次{p.me ? ' · 你' : ''}</text>
+            <circle cx={p.x} cy={p.y} r={R(p.n)} className={p.me ? 'fill-orange' : 'fill-sunken stroke-line'} strokeWidth={1.5} />
+            <text x={p.x} y={p.y - 2} textAnchor="middle" className={cx('font-sans text-h3 font-bold', p.me ? 'fill-orange-ink' : 'fill-ink')}>{p.name}</text>
+            <text x={p.x} y={p.y + 16} textAnchor="middle" className={cx('font-sans text-caption tabular-nums', p.me ? 'fill-orange-ink' : 'fill-ink-2')}>{p.n} 次{p.me ? ' · 你' : ''}</text>
           </motion.g>
         ))}
       </svg>

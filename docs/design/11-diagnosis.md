@@ -8,7 +8,7 @@
 |---|---|
 | `BRAND` | 当前品牌名 |
 | `QUESTIONS[{text, kind}]` | 4 个问题；`kind`: `find`（找品牌）/`ask`（问到你，Q3 直接问品牌名） |
-| `PLATFORM_NAMES` | 豆包、DeepSeek、Kimi、文心一言、通义千问 |
+| `PLATFORM_NAMES` | 豆包、腾讯元宝、DeepSeek、通义千问、文心一言（顺序即数据行、列头、头像点的顺序；窄处用 `PLATFORM_SHORT`） |
 | `SAMPLES[平台][问题] = {rank|null, total, note?}` | 20 条采样；`rank` = 品牌在回答列表中的名次，`total` = 列出的品牌数 |
 | `tierOf(rank)` / `TIER` | 档位与视觉编码（靠前/居中/靠后/未提及） |
 | `answerList(sample)` | 还原回答里的品牌列表（其他品牌为模拟） |

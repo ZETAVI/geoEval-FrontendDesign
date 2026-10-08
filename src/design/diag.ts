@@ -11,7 +11,10 @@ export const QUESTIONS: { text: string; kind: Kind }[] = [
   { text: `${BRAND}怎么样，值得选吗？`, kind: 'ask' },
   { text: '上海性价比高的保姆中介推荐', kind: 'find' },
 ]
-export const PLATFORM_NAMES = ['豆包', 'DeepSeek', 'Kimi', '文心一言', '通义千问']
+/** 平台顺序是全局约定：数据行、列头、头像点都按此排列 */
+export const PLATFORM_NAMES = ['豆包', '腾讯元宝', 'DeepSeek', '通义千问', '文心一言']
+/** 空间紧张处（列头、头像点）使用的短名 */
+export const PLATFORM_SHORT = ['豆包', '元宝', 'DeepSeek', '千问', '文心']
 
 export type Tier = 'top' | 'mid' | 'low' | 'none'
 export const tierOf = (rank: number | null): Tier => (rank == null ? 'none' : rank <= 3 ? 'top' : rank <= 5 ? 'mid' : 'low')
@@ -31,8 +34,8 @@ const none: Sample = { rank: null, total: 5 }
 /** 行 = 平台，列 = 问题 */
 export const SAMPLES: Sample[][] = [
   [s(3, 8, '上门流程规范，服务前会确认清单，适合浦东家庭。'), s(5, 8, '深度保洁有固定清单，但公开报价较少。'), s(2, 4, '本地家政公司，流程规范，服务范围没有写清。'), none],
-  [s(7, 8, '一家本地家政公司，公开信息较少。'), none, s(2, 3, '一家本地家政公司，线上评价较少。'), none],
   [none, none, s(3, 5, '阿姨培训到位，但服务区域不明确。'), none],
+  [s(7, 8, '一家本地家政公司，公开信息较少。'), none, s(2, 3, '一家本地家政公司，线上评价较少。'), none],
   [none, none, none, none],
   [none, none, none, none],
 ]
@@ -66,6 +69,8 @@ const findAll = flat.filter((x) => QUESTIONS[x.q].kind === 'find')
 const findHits = findAll.filter((x) => x.rank != null)
 
 export const METRICS = {
+  /** AI 推荐指数（0–5），以后端 recommendationIndex 为准 */
+  index: 3.5,
   total: flat.length,
   mentions: hits.length,
   mentionRate: Math.round((hits.length / flat.length) * 100),
